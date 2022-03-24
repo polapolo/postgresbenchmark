@@ -36,9 +36,13 @@ consumerLoop:
 			break consumerLoop
 		}
 
+		dataRows := make([][]interface{}, 0)
 		records := fetches.Records()
-		for _, record := range records {
+		log.Println("Num. of Records:", len(records))
+		for _, record := range fetches.Records() {
 			counter++
+
+			// parse avro to struct
 			var order orderAVRO
 			err := avro.Unmarshal(schema, record.Value, &order)
 			if err != nil {
@@ -46,10 +50,31 @@ consumerLoop:
 				continue
 			}
 
-			if counter == 1000000 {
-				log.Printf("%d %+v", counter, order)
-				log.Println("Speed:", time.Since(startTime).Nanoseconds())
+			// prepare data to be ingested
+			row := []interface{}{
+				order.ID,        // id
+				order.UserID,    // user_id
+				order.StockCode, // stock_code
+				"B",             // type
+				order.Lot,       // lot
+				order.Price,     // price
+				order.Status,    // status
+				time.Now(),      // created_at
 			}
+			dataRows = append(dataRows, row)
+
+			// if counter == 1000000 {
+			// 	log.Printf("%d %+v", counter, order)
+			// 	log.Println("Insert Order Speed:", time.Since(startTime).Nanoseconds())
+			// }
 		}
+
+		// ingest / copy
+		err = copyOrders(context.Background(), dataRows)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		log.Println("Insert Order Speed:", time.Since(startTime).Milliseconds())
 	}
 }

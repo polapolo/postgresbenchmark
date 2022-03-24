@@ -11,13 +11,13 @@ type order struct {
 }
 
 type orderAVRO struct {
-	ID        string `avro:"id"`
-	UserID    int64  `avro:"user_id"`
-	StockCode string `avro:"stock_code"`
-	Type      string `avro:"type"`
-	Lot       int64  `avro:"lot"`
-	Price     int    `avro:"price"`
-	Status    int    `avro:"status"`
+	ID        string `db:"id" avro:"id"`
+	UserID    int64  `db:"user_id" avro:"user_id"`
+	StockCode string `db:"stock_code" avro:"stock_code"`
+	Type      string `db:"type" avro:"type"`
+	Lot       int64  `db:"lot" avro:"lot"`
+	Price     int    `db:"price" avro:"price"`
+	Status    int    `db:"status" avro:"status"`
 }
 
 type orderAVROUpsert struct {

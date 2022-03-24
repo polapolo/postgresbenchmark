@@ -1,17 +1,17 @@
 version: '3.7'
 services:
-  web:
-    container_name: web2
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - 8090:8090 # grpc
-    expose:
-      - "8090" # grpc
-    links:
-      - "redpanda:redpanda"
-      - "db:db"
+  # web:
+  #   container_name: web2
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 8090:8090 # grpc
+  #   expose:
+  #     - "8090" # grpc
+  #   links:
+  #     - "redpanda:redpanda"
+  #     - "db:db"
   db:
     image: postgres:14.2
     container_name: db
@@ -23,6 +23,8 @@ services:
       - 5433:5432
     volumes:
       - /home/yohanesnicholaspaulokwarrie/postgres:/var/lib/postgresql/data
+    logging:
+      driver: none
   # adminer:
   #   image: adminer
   #   container_name: adminer
