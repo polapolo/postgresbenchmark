@@ -1,0 +1,77 @@
+version: '3.7'
+services:
+  web:
+    container_name: web2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8090:8090 # grpc
+    expose:
+      - "8090" # grpc
+    links:
+      - "redpanda:redpanda"
+      - "db:db"
+  db:
+    image: postgres:14.2
+    container_name: db
+    restart: always
+    # environment:
+    #   POSTGRES_PASSWORD: example
+    ports:
+      - 5432:5432
+    volumes:
+      - /home/yohanesnicholaspaulokwarrie/postgres:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    container_name: kafdrop
+    restart: "no"
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "rp-node-0:9092"
+      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+    depends_on:
+      - "redpanda"
+    logging:
+      driver: none
+  redpanda:
+    # image: vectorized/redpanda:v21.6.1
+    image: vectorized/redpanda:latest
+    container_name: redpanda
+    entrypoint:
+      - /usr/bin/rpk
+      - redpanda
+      - start
+      - --smp=2
+      - --memory=4G
+      - --overprovisioned
+      - --default-log-level=info
+      - --node-id=0
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:29092,DOCKER://redpanda:9092,OUTSIDE://redpanda:9093
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:29092,DOCKER://redpanda:9092,OUTSIDE://127.0.0.1:9093
+    ports:
+      - 9092:9092
+      - 9093:9093
+      - 29092:29092
+    volumes:
+      - /var/lib/redpanda/data:/var/lib/redpanda/data
+    logging:
+      driver: none
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   ports:
+  #     - 9090:9090
+  #   volumes:
+  #     - /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  #   logging:
+  #     driver: none
