@@ -19,6 +19,10 @@ func main() {
 	redPandaClient := getRedPandaClient()
 	defer redPandaClient.Close()
 
+	// consumer
+	go InsertOrderConsumer()
+
+	// http endpoint
 	r := gin.Default()
 
 	r.GET("/publish/orders/insert/avro", func(c *gin.Context) {
